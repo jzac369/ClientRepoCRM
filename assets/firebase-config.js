@@ -10,10 +10,11 @@
    ========================================================================== */
 
 const firebaseConfig = {
-  apiKey: "VLOZ_SEM_API_KEY",
-  authDomain: "VLOZ_SEM_PROJECT.firebaseapp.com",
-  projectId: "VLOZ_SEM_PROJECT_ID",
-  storageBucket: "VLOZ_SEM_PROJECT.firebasestorage.app",
-  messagingSenderId: "VLOZ_SEM_SENDER_ID",
-  appId: "VLOZ_SEM_APP_ID",
+  apiKey: "AIzaSyB-BvFFFMuV_t-b0EwSQXHf1p8LMHERbW8",
+  authDomain: "clientvault-crm-a6f3e.firebaseapp.com",
+  projectId: "clientvault-crm-a6f3e",
+  storageBucket: "clientvault-crm-a6f3e.firebasestorage.app",
+  messagingSenderId: "508636754269",
+  appId: "1:508636754269:web:0505631354261569078b4",
+  measurementId: "G-GP8QXLQQ82",
 };
