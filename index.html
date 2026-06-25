@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Client Project CRM</title>
+    <meta
+      name="description"
+      content="Prehľadné CRM pre správu klientskych webov, prístupov, GitHub repozitárov a dôležitých poznámok."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-topbar">
+          <div class="brand-mark">
+            <span class="brand-dot"></span>
+            <strong>Client Vault</strong>
+          </div>
+          <nav class="hero-nav" aria-label="Hlavná navigácia">
+            <a href="#authSection">Prihlásenie</a>
+            <a href="#authSection">Prístup</a>
+            <a href="#authSection">Kontakt</a>
+          </nav>
+          <a class="hero-login-link" href="#authSection">Vstúpiť</a>
+        </div>
+
+        <div class="hero-body">
+          <div class="hero-copy">
+            <div class="status-pill">
+              <span class="status-dot"></span>
+              Súkromný pracovný priestor pre tvoje klientské weby
+            </div>
+            <h1>Maj projekty a prístupy pod kontrolou.</h1>
+            <p class="hero-text">
+              Diskrétne, prehľadne a bez zbytočného chaosu. Prihlás sa a pokračuj tam,
+              kde si naposledy skončil.
+            </p>
+            <div class="hero-actions">
+              <a class="primary-button hero-button-link" href="#authSection">Prihlásiť sa</a>
+              <span class="hero-caption">Súčasný prístup je len pre autorizovaného používateľa.</span>
+            </div>
+          </div>
+
+          <div class="hero-preview" aria-hidden="true">
+            <div class="preview-window">
+              <div class="preview-window-top">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="preview-panel preview-panel-main">
+                <div class="preview-ring">
+                  <div class="preview-ring-core">safe</div>
+                </div>
+                <div class="preview-summary">
+                  <strong>Súkromný dashboard</strong>
+                  <p>Pokojný pracovný priestor pripravený na ďalší krok.</p>
+                </div>
+              </div>
+              <div class="preview-list">
+                <div class="preview-row">
+                  <span class="preview-row-dot is-teal"></span>
+                  <span>Pracovné záznamy</span>
+                  <small>private</small>
+                </div>
+                <div class="preview-row">
+                  <span class="preview-row-dot is-orange"></span>
+                  <span>Súkromné údaje</span>
+                  <small>locked</small>
+                </div>
+                <div class="preview-row">
+                  <span class="preview-row-dot is-green"></span>
+                  <span>Osobný prehľad</span>
+                  <small>ready</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-layout">
+        <section id="authSection" class="auth-card">
+          <div class="auth-copy">
+            <p class="eyebrow">Bezpečný vstup</p>
+            <h2>Prihlásenie do súkromného priestoru.</h2>
+            <p>
+              Táto časť je zámerne strohá. Po prihlásení sa dostaneš priamo do svojho
+              pracovného rozhrania.
+            </p>
+            <p class="support-note">Prvý používateľ sa vytvára vo Firebase Authentication.</p>
+          </div>
+
+          <form id="loginForm" class="auth-form">
+            <label>
+              <span>Email</span>
+              <input id="loginEmail" name="email" type="email" autocomplete="username" required />
+            </label>
+            <label>
+              <span>Heslo</span>
+              <input
+                id="loginPassword"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+              />
+            </label>
+            <div class="auth-form-actions">
+              <button type="submit" class="primary-button">Prihlásiť sa</button>
+              <button id="previewDashboardBtn" type="button" class="ghost-button">
+                Zobraziť ukážku dashboardu
+              </button>
+            </div>
+            <p id="supportText" class="support-text">Len pre autorizovaný prístup.</p>
+          </form>
+        </section>
+
+        <section id="appSection" class="app-section hidden">
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <div class="user-chip">
+                <span>Prihlásený používateľ</span>
+                <strong id="userEmail">-</strong>
+              </div>
+            </div>
+            <div class="toolbar-right">
+              <input id="searchInput" type="search" placeholder="Hľadať projekt, klienta, tag..." />
+              <select id="statusFilter">
+                <option value="all">Všetky stavy</option>
+                <option value="lead">Lead</option>
+                <option value="planned">Plánuje sa</option>
+                <option value="in-progress">Rozpracované</option>
+                <option value="review">Na schválení</option>
+                <option value="live">Beží</option>
+                <option value="support">Support</option>
+              </select>
+              <select id="priorityFilter">
+                <option value="all">Všetky priority</option>
+                <option value="low">Nízka</option>
+                <option value="medium">Stredná</option>
+                <option value="high">Vysoká</option>
+                <option value="urgent">Urgent</option>
+              </select>
+              <button id="exportBtn" type="button" class="secondary-button">Export JSON</button>
+              <button id="logoutBtn" type="button" class="ghost-button">Odhlásiť</button>
+            </div>
+          </div>
+
+          <section class="vault-banner">
+            <div>
+              <p class="eyebrow">Vault vrstva</p>
+              <h2>Citlivé prístupy odomkni vlastným kľúčom.</h2>
+              <p>
+                Firebase login chráni vstup do aplikácie. Tento druhý kľúč slúži na šifrovanie a
+                dešifrovanie admin prihlásení a hesiel priamo v tvojom prehliadači.
+              </p>
+            </div>
+            <div class="vault-actions">
+              <input
+                id="vaultPassphrase"
+                type="password"
+                placeholder="Zadaj silný vault kľúč"
+                autocomplete="off"
+              />
+              <button id="unlockVaultBtn" type="button" class="primary-button">Odomknúť</button>
+              <button id="lockVaultBtn" type="button" class="ghost-button">Zamknúť</button>
+            </div>
+          </section>
+
+          <section class="metric-grid">
+            <article class="metric-card">
+              <span>Všetky projekty</span>
+              <strong id="metricTotal">0</strong>
+            </article>
+            <article class="metric-card">
+              <span>Aktívne</span>
+              <strong id="metricActive">0</strong>
+            </article>
+            <article class="metric-card">
+              <span>Urgent alebo vysoká priorita</span>
+              <strong id="metricUrgent">0</strong>
+            </article>
+            <article class="metric-card">
+              <span>Obnova do 30 dní</span>
+              <strong id="metricRenewals">0</strong>
+            </article>
+          </section>
+
+          <section class="workspace-grid">
+            <aside class="list-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Databáza projektov</p>
+                  <h2>Prehľad klientov</h2>
+                </div>
+                <button id="newProjectBtn" type="button" class="secondary-button">Nový projekt</button>
+              </div>
+              <div id="projectList" class="project-list"></div>
+            </aside>
+
+            <section class="editor-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Detail</p>
+                  <h2 id="editorTitle">Nový projekt</h2>
+                </div>
+                <button id="deleteProjectBtn" type="button" class="ghost-button hidden">Zmazať</button>
+              </div>
+
+              <form id="projectForm" class="project-form">
+                <div class="form-section">
+                  <h3>Základ</h3>
+                  <div class="form-grid">
+                    <label>
+                      <span>Názov projektu</span>
+                      <input name="name" required />
+                    </label>
+                    <label>
+                      <span>Typ služby</span>
+                      <input name="serviceType" placeholder="Web, SEO, support, e-shop..." />
+                    </label>
+                    <label>
+                      <span>Stav</span>
+                      <select name="status">
+                        <option value="lead">Lead</option>
+                        <option value="planned">Plánuje sa</option>
+                        <option value="in-progress">Rozpracované</option>
+                        <option value="review">Na schválení</option>
+                        <option value="live">Beží</option>
+                        <option value="support">Support</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Priorita</span>
+                      <select name="priority">
+                        <option value="low">Nízka</option>
+                        <option value="medium" selected>Stredná</option>
+                        <option value="high">Vysoká</option>
+                        <option value="urgent">Urgent</option>
+                      </select>
+                    </label>
+                    <label class="full-width">
+                      <span>Tagy</span>
+                      <input name="tags" placeholder="wordpress, retainer, redesign" />
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h3>Lokality a repozitáre</h3>
+                  <div class="form-grid">
+                    <label>
+                      <span>Webová lokalita</span>
+                      <input name="projectUrl" type="url" placeholder="https://..." />
+                    </label>
+                    <label>
+                      <span>Admin zóna</span>
+                      <input name="adminUrl" type="url" placeholder="https://.../wp-admin" />
+                    </label>
+                    <label>
+                      <span>Staging</span>
+                      <input name="stagingUrl" type="url" placeholder="https://staging..." />
+                    </label>
+                    <label>
+                      <span>GitHub repo</span>
+                      <input name="repoUrl" type="url" placeholder="https://github.com/..." />
+                    </label>
+                    <label class="full-width">
+                      <span>Tech stack</span>
+                      <input name="techStack" placeholder="WordPress, React, Firebase, custom theme..." />
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h3>Klient a obchod</h3>
+                  <div class="form-grid">
+                    <label>
+                      <span>Meno a priezvisko klienta</span>
+                      <input name="clientName" required />
+                    </label>
+                    <label>
+                      <span>Email</span>
+                      <input name="clientEmail" type="email" />
+                    </label>
+                    <label>
+                      <span>Telefón</span>
+                      <input name="clientPhone" />
+                    </label>
+                    <label>
+                      <span>Budget</span>
+                      <input name="budget" type="number" min="0" step="0.01" placeholder="1200" />
+                    </label>
+                    <label>
+                      <span>Mesačný retainer</span>
+                      <input name="recurringFee" type="number" min="0" step="0.01" placeholder="150" />
+                    </label>
+                    <label>
+                      <span>Najbližší deadline</span>
+                      <input name="nextDeadline" type="date" />
+                    </label>
+                    <label>
+                      <span>Obnova domény / hostingu</span>
+                      <input name="renewalDate" type="date" />
+                    </label>
+                    <label>
+                      <span>Hosting provider</span>
+                      <input name="hostingProvider" placeholder="Websupport, Hostinger..." />
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h3>Citlivé prístupy</h3>
+                  <div class="form-grid">
+                    <label>
+                      <span>Admin login alebo email</span>
+                      <input name="adminUsername" autocomplete="off" />
+                    </label>
+                    <label>
+                      <span>Admin heslo</span>
+                      <input name="adminPassword" type="password" autocomplete="new-password" />
+                    </label>
+                    <label>
+                      <span>Hosting login</span>
+                      <input name="hostingUsername" autocomplete="off" />
+                    </label>
+                    <label>
+                      <span>Hosting heslo</span>
+                      <input name="hostingPassword" type="password" autocomplete="new-password" />
+                    </label>
+                    <label class="checkbox-row full-width">
+                      <input id="removeSavedSecrets" name="removeSavedSecrets" type="checkbox" />
+                      <span>Vymazať uložené citlivé prístupy pri ďalšom uložení</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h3>Linky a poznámky</h3>
+                  <div class="form-grid">
+                    <label class="full-width">
+                      <span>Dôležité linky</span>
+                      <textarea
+                        name="importantLinks"
+                        rows="4"
+                        placeholder="Analytics - https://...\nFigma - https://...\nFaktúry - https://..."
+                      ></textarea>
+                    </label>
+                    <label class="full-width">
+                      <span>Poznámky</span>
+                      <textarea
+                        name="notes"
+                        rows="6"
+                        placeholder="Dohodnuté termíny, scope, čo čaká na klienta, prístupy, content..."
+                      ></textarea>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" class="primary-button">Uložiť projekt</button>
+                  <button id="resetFormBtn" type="button" class="ghost-button">Vymazať formulár</button>
+                </div>
+              </form>
+            </section>
+
+            <aside class="tips-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Čo by som doplnil</p>
+                  <h2>Vylepšenia pre ďalšiu fázu</h2>
+                </div>
+              </div>
+              <ul class="tips-list">
+                <li>Obnova SSL, domény a hostingu s farebným upozornením pred expiráciou.</li>
+                <li>História objednávky: dopyt, cenová ponuka, schválenie, dodanie, support.</li>
+                <li>Evidencia faktúr, záloh a mesačných servisných balíkov.</li>
+                <li>Checklist pred spustením: SEO, analytics, backup, formulár, cookie banner.</li>
+                <li>Log zmien po nasadení, aby si vedel, čo a kedy sa menilo.</li>
+                <li>Súbory ku klientovi: logo, brief, zmluva, exporty a prístupy.</li>
+              </ul>
+            </aside>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+    <script type="module" src="./assets/app.js"></script>
+  </body>
+</html>
