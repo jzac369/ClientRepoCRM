@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClientVault — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/styles.css">
+</head>
+<body>
+
+<div class="page-shell app-shell">
+
+  <div class="topbar">
+    <div class="brand"><span class="brand-dot"></span>ClientVault</div>
+    <div class="topbar-actions">
+      <span class="helper-text" id="userEmail" style="margin-right:6px;"></span>
+      <button class="icon-btn" id="exportBtn" title="Export do JSON" aria-label="Export">⭳</button>
+      <button class="icon-btn" id="themeToggle" title="Prepnúť tému" aria-label="Prepnúť svetlý/tmavý režim">☀️</button>
+      <button class="btn btn-ghost btn-small" id="logoutBtn">Odhlásiť sa</button>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Aktívne projekty</div>
+      <div class="stat-value" id="statActive">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Čakajúce platby</div>
+      <div class="stat-value good" id="statPending">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Najbližší termín</div>
+      <div class="stat-value" id="statDeadline" style="font-size:1.2rem;">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Domény do 30 dní</div>
+      <div class="stat-value good" id="statExpiring">0</div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="panel">
+      <h3>Projektový pulz</h3>
+      <div class="preview-panel" style="box-shadow:none; padding:0;">
+        <div class="preview-summary-card">
+          <div class="ring" id="pulseRing" style="--pct:100;"><span id="pulseRingValue">100%</span></div>
+          <div class="preview-summary-text" id="pulseSummaryText">
+            <strong>Načítavam…</strong>
+          </div>
+        </div>
+        <div id="pulseList"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Rýchla akcia</h3>
+      <p class="helper-text" style="margin-bottom:16px;">Pridaj nový projekt alebo si stiahni zálohu všetkých dát. Citlivé heslá ostávajú v exporte zašifrované.</p>
+      <button class="btn btn-primary btn-block" id="newProjectBtnSide" style="margin-bottom:10px;" onclick="document.getElementById('newProjectBtn').click()">+ Nový projekt</button>
+      <button class="btn btn-ghost btn-block" onclick="document.getElementById('exportBtn').click()">⭳ Stiahnuť zálohu (JSON)</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="toolbar">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Hľadať podľa názvu, klienta alebo technológie…">
+      </div>
+      <button class="btn btn-primary" id="newProjectBtn">+ Nový projekt</button>
+    </div>
+    <div class="chip-row" style="margin-bottom:22px;">
+      <button class="chip active" data-status-filter="all">Všetky</button>
+      <button class="chip" data-status-filter="dopyt">Dopyt</button>
+      <button class="chip" data-status-filter="realizacia">V realizácii</button>
+      <button class="chip" data-status-filter="dokoncene">Dokončené</button>
+      <button class="chip" data-status-filter="udrzba">Údržba</button>
+      <button class="chip" data-status-filter="pozastavene">Pozastavené</button>
+    </div>
+    <div class="project-grid" id="projectGrid"></div>
+  </div>
+
+  <footer class="site-footer">ClientVault — dáta sú uložené vo vašom Firebase projekte.</footer>
+</div>
+
+<!-- ============================ MODAL ============================ -->
+<div class="modal-overlay" id="modalOverlay" style="display:none;">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2 id="modalTitle">Nový projekt</h2>
+      <button class="icon-btn" id="modalCloseBtn" aria-label="Zatvoriť">✕</button>
+    </div>
+
+    <div class="tab-row">
+      <button type="button" class="tab-btn active" data-tab="zakladne">Základné</button>
+      <button type="button" class="tab-btn" data-tab="linky">Linky</button>
+      <button type="button" class="tab-btn" data-tab="trezor">🔒 Trezor</button>
+      <button type="button" class="tab-btn" data-tab="ulohy">Úlohy</button>
+      <button type="button" class="tab-btn" data-tab="log">Poznámky</button>
+    </div>
+
+    <form id="modalForm">
+
+      <div class="tab-pane active" id="tab-zakladne">
+        <div class="field"><label>Názov projektu *</label><input type="text" id="f_name" required></div>
+        <div class="field-row">
+          <div class="field"><label>Klient (meno a priezvisko / firma)</label><input type="text" id="f_client"></div>
+          <div class="field"><label>Kontakt (e-mail / telefón)</label><input type="text" id="f_contact"></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Stav</label>
+            <select id="f_status">
+              <option value="dopyt">Dopyt</option>
+              <option value="realizacia">V realizácii</option>
+              <option value="dokoncene">Dokončené</option>
+              <option value="udrzba">Údržba</option>
+              <option value="pozastavene">Pozastavené</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Priorita</label>
+            <select id="f_priority">
+              <option value="low">Nízka</option>
+              <option value="medium" selected>Stredná</option>
+              <option value="high">Vysoká</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Cena (€)</label><input type="number" id="f_price" min="0" step="1"></div>
+          <div class="field">
+            <label>Stav platby</label>
+            <select id="f_paymentStatus">
+              <option value="caka">Čaká sa</option>
+              <option value="zaplatene">Zaplatené</option>
+              <option value="splatky">Na splátky</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Začiatok</label><input type="date" id="f_startDate"></div>
+          <div class="field"><label>Termín dokončenia</label><input type="date" id="f_deadline"></div>
+        </div>
+        <div class="field"><label>Expirácia domény / hostingu</label><input type="date" id="f_domainExpiry"></div>
+        <div class="field"><label>Tech tagy (oddelené čiarkou)</label><input type="text" id="f_techTags" placeholder="Firebase, GitHub Pages, Webnode"></div>
+      </div>
+
+      <div class="tab-pane" id="tab-linky">
+        <div class="field"><label>Webová stránka</label><input type="url" id="f_websiteUrl" placeholder="https://"></div>
+        <div class="field"><label>GitHub repozitár</label><input type="url" id="f_githubUrl" placeholder="https://github.com/…"></div>
+        <div class="field"><label>Admin zóna (URL)</label><input type="url" id="f_adminUrl" placeholder="https://"></div>
+        <div class="field">
+          <label>Ďalšie dôležité linky</label>
+          <div class="links-list" id="linksList"></div>
+          <div class="add-row">
+            <input type="text" id="newLinkLabel" placeholder="Popis (napr. Zmluva)">
+            <input type="url" id="newLinkUrl" placeholder="https://">
+            <button type="button" class="btn btn-ghost btn-small" id="addLinkBtn">+ Pridať</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane" id="tab-trezor">
+        <div id="vaultTabBody"></div>
+      </div>
+
+      <div class="tab-pane" id="tab-ulohy">
+        <div id="checklistWrap"></div>
+        <div class="add-row">
+          <input type="text" id="newTodoText" placeholder="Nová úloha…">
+          <button type="button" class="btn btn-ghost btn-small" id="addTodoBtn">+ Pridať</button>
+        </div>
+      </div>
+
+      <div class="tab-pane" id="tab-log">
+        <div class="field"><label>Voľné poznámky k projektu</label><textarea id="f_notes" placeholder="Čokoľvek dôležité, čo sa nehodí inde…"></textarea></div>
+        <label style="display:block; font-size:0.82rem; color:var(--ink-soft); margin-bottom:7px; font-weight:600;">Časovaný log dohodnutých vecí</label>
+        <div id="logWrap"></div>
+        <div class="add-row">
+          <input type="text" id="newLogText" placeholder="Napr. Dohodnuté predĺženie termínu o týždeň">
+          <button type="button" class="btn btn-ghost btn-small" id="addLogBtn">+ Pridať</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:24px;">
+        <button type="submit" class="btn btn-primary btn-block" id="saveProjectBtn">Uložiť projekt</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script src="./assets/firebase-config.js"></script>
+<script src="./assets/vault.js"></script>
+<script type="module" src="./assets/app.js"></script>
+</body>
+</html>

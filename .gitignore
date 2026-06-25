@@ -1,4 +1,4 @@
+.DS_Store
+node_modules/
 .firebase/
-.idea/
-.vscode/
-Thumbs.db
+*.log

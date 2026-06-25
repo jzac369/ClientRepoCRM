@@ -1,132 +1,89 @@
-# Client Project CRM
+# ClientVault — súkromné CRM pre webové projekty
 
-Samostatne CRM pre evidenciu klientskych webov, projektov, GitHub repozitarov, kontaktov a citlivych pristupov. Projekt je navrhnuty tak, aby:
+Samostatné CRM na evidenciu klientskych webových projektov: web, GitHub repo,
+klient, kontakt, admin prístupy, termíny, úlohy a poznámky — na jednom mieste,
+chránené prihlásením a šifrovaným trezorom na citlivé heslá.
 
-- kod zil v samostatnej GitHub repository,
-- data boli vo Firebase Firestore,
-- vstup do systemu chrani Firebase Authentication,
-- prihlasenia a hesla ku klientskym administraciam boli navyse sifrovane v prehliadaci cez vlastny vault kluc.
+## Architektúra
 
-## Co uz tato verzia obsahuje
+- **Kód** žije v tomto GitHub repozitári, nasadený cez GitHub Pages (alebo Firebase Hosting).
+- **Dáta** sú v Cloud Firestore.
+- **Vstup do appky** je chránený Firebase Authentication (e-mail + heslo).
+- **Citlivé prístupy klientov** (admin login/heslo) sú navyše šifrované AES-GCM
+  kľúčom odvodeným z vlastnej passphrase priamo v prehliadači — server (ani
+  Firestore) nikdy nevidí passphrase ani nešifrovaný obsah.
 
-- prihlasovanie cez Firebase Email/Password
-- dashboard s metrikami
-- filtrovanie podla textu, stavu a priority
-- CRUD spravu klientskych projektov
-- polia pre nazov projektu, lokalitu, GitHub repo, klienta, kontakt, admin URL, dolezite datumy, poznamky a dalsie linky
-- sifrovany vault pre citlive prihlasovacie udaje
-- export databazy projektov do JSON
-- ukazkovy dashboard bez potreby Firebase konfiguracie
+## Bezpečnostný model — dve vrstvy
 
-## Odporucana architektura
+1. **Firestore Security Rules** (`firestore.rules`) — každý projekt má pole
+   `ownerId`. Čítať/zapisovať môže len prihlásený účet, ktorému dokument patrí.
+   Registrácia nových účtov je v UI vypnutá — nový účet vznikne len ručne
+   vo Firebase Console.
+2. **Vault passphrase** (`assets/vault.js`) — heslá do admin zón klientov sa
+   pred uložením zašifrujú AES-256-GCM, kľúč sa odvodí PBKDF2 (200 000
+   iterácií) z passphrase, ktorú poznáš len ty. Passphrase sa nikde neukladá —
+   ak ju zabudneš, šifrované údaje sa nedajú obnoviť. Odporúčam si ju uložiť
+   do vlastného password manažéra.
 
-- GitHub repository: verzovanie kodu, issue tracking, buduci CI/CD
-- GitHub Pages alebo Firebase Hosting: nasadenie frontendu
-- Firebase Authentication: vstup do CRM
-- Cloud Firestore: projekty, klienti, poznamky, linky, datumy
-- Volitelne neskor:
-  - Firebase Storage pre briefy, loga, exporty a zmluvy
-  - Cloud Functions pre notifikacie na expiracie alebo follow-upy
+## Nastavenie od nuly
 
-## Bezpecnostny model
+### 1. Firebase projekt
 
-Firebase login chrani samotny pristup do aplikacie. To je prva vrstva.
+1. Vo [Firebase Console](https://console.firebase.google.com/) vytvor nový projekt.
+2. **Authentication** → Sign-in method → zapni **Email/Password**.
+3. **Authentication** → Users → manuálne vytvor presne jeden účet (tvoj e-mail + heslo).
+   Toto je jediný účet, ktorý sa môže prihlásiť.
+4. **Firestore Database** → vytvor databázu (production mode).
+5. **Project settings** → Your apps → Add app → Web → skopíruj `firebaseConfig`.
 
-Citlive polia ako admin login a heslo sa nesnazia ukladat v cistej forme. Pred zapisom sa sifruju v prehliadaci cez Web Crypto API a do Firestore sa uklada iba sifrovany bundle. To je druha vrstva.
+### 2. Vyplň konfiguráciu
 
-Do praxe by som ti odporucil:
+Otvor `assets/firebase-config.js` a vlož skutočné hodnoty z kroku 1.5.
+Tieto hodnoty nie sú tajné — môžu byť verejne v kóde.
 
-- pouzit silny Firebase ucet s 2FA na Google konte
-- pouzit dlhy a unikarny vault kluc
-- neukladat sem pristupy ku banke, fakturacii alebo superadmin pristupy bez dalsieho zvazenia
-- pravidelne exportovat sifrovanu zalohu
+### 3. Nasaď bezpečnostné pravidlá
 
-## Rychly start
+Buď cez Firebase CLI:
 
-1. Vytvor novu GitHub repository, napr. `client-project-crm`.
-2. Skopiruj obsah tohto priecinka do novej repo.
-3. Vo Firebase Console vytvor novy projekt.
-4. Zapni:
-   - Authentication -> Sign-in method -> Email/Password
-   - Firestore Database
-5. Vypln realne Firebase hodnoty v `assets/firebase-config.js`.
-6. Do Firestore nahraj pravidla zo suboru `firestore.rules`.
-7. Vo Firebase Authentication vytvor prveho pouzivatela manualne.
-8. Ak pojdes cez GitHub Pages, pridaj svoju domenu do Firebase Authentication -> Settings -> Authorized domains.
-
-## GitHub Pages nasadenie
-
-Najjednoduchsia cesta:
-
-1. Pushni repo na GitHub.
-2. V nastaveniach repository otvor `Settings -> Pages`.
-3. Ako source nastav branch, kde mas tento projekt, typicky `main` a root `/`.
-4. Po deployi skontroluj, ci je GitHub Pages domena pridana medzi autorizovanymi domenami vo Firebase.
-
-Tento repozitar moze obsahovat aj GitHub Actions workflow pre automaticky deploy statickej verzie na GitHub Pages.
-Aj bez Firebase konfiguracie sa ti stranka vzdialene nacita a bude fungovat ukazkovy dashboard rezim.
-
-Poznamka: `assets/firebase-config.js` je pri tomto type frontendu bezne verejny. Samotna Firebase web konfiguracia nie je tajomstvo. Bezpecnost stoji na Firebase Authentication, Firestore pravidlach a na tom, ze citlive klientove hesla sa ukladaju sifrovane vlastnym vault klucom.
-
-## Firebase Hosting nasadenie
-
-Ak nechces riesit konfiguracny subor cez GitHub Pages, Firebase Hosting je pri tomto type projektu casto cistejsie riesenie.
-
-1. Nainstaluj Firebase CLI.
-2. Prihlas sa: `firebase login`
-3. Inicializuj hosting v tomto priecinku.
-4. Deploy: `firebase deploy`
-
-Subor `firebase.json` je pripraveny ako jednoducha startovacia konfiguracia.
-
-## Firestore model
-
-Kolekcia: `projects`
-
-Priklad dokumentu:
-
-```json
-{
-  "ownerId": "uid",
-  "ownerEmail": "ty@domena.sk",
-  "name": "Web pre Studio Aurora",
-  "serviceType": "WordPress support",
-  "status": "live",
-  "priority": "medium",
-  "projectUrl": "https://studioaurora.sk",
-  "adminUrl": "https://studioaurora.sk/wp-admin",
-  "repoUrl": "https://github.com/meno/repo",
-  "clientName": "Jana Novakova",
-  "clientEmail": "jana@studioaurora.sk",
-  "clientPhone": "+421...",
-  "budget": "1400",
-  "recurringFee": "150",
-  "nextDeadline": "2026-07-10",
-  "renewalDate": "2026-08-01",
-  "importantLinks": "Analytics - https://...",
-  "notes": "Caka sa na texty a fotky.",
-  "credentialVault": {
-    "algorithm": "AES-GCM",
-    "version": 1,
-    "salt": "...",
-    "iv": "...",
-    "cipher": "..."
-  }
-}
+```bash
+firebase deploy --only firestore:rules
 ```
 
-## Co by som doplnil v dalsom kroku
+alebo skopíruj obsah `firestore.rules` priamo do Firebase Console →
+Firestore Database → Rules → Publish.
 
-Ak z toho chces naozaj silny pracovny system, dalsia faza by mohla obsahovat:
+### 4. GitHub Pages
 
-- pipeline objednavky: dopyt, kalkulacia, schvalenie, realizacia, odovzdanie
-- tasky ku projektu a checklists pred spustenim
-- pripomienky na obnovu domen, SSL, faktur a support balikov
-- evidenciu zmluv, briefov a assetov
-- zaznam komunikacie s klientom
-- rozdelenie na klienta, projekt a fakturaciu
-- dashboard s mesacnym prijmom z retainerov
+Repozitár → Settings → Pages → Source: `main` branch, `/ (root)`.
+Stránka pobeží na `https://<username>.github.io/<repo>/`.
 
-## Dolezita poznamka ku GitHub repo
+## Prvé prihlásenie a trezor
 
-V tomto prostredi nebol dostupny `git`, preto som pripravil kompletny projektovy priecinok, ale samotne `git init`, vytvorenie vzdialenej repository a push som tu nespravil. Kod je pripraveny tak, aby si z neho vedel spravit novu repo okamzite.
+1. Otvor stránku, prihlás sa e-mailom a heslom z Firebase Authentication.
+2. Vytvor prvý projekt (záložka "Trezor" je zamknutá, kým nezadáš heslá).
+3. Pri prvom zadaní hesla do admin zóny ťa appka vyzve na **vault passphrase** —
+   tá sa použije navždy pre všetky budúce šifrované záznamy. Zapamätaj si ju
+   bezpečne, nikde sa neukladá.
+
+## Funkcie
+
+- Karty projektov: názov, klient, kontakt, web, GitHub, admin URL, tech tagy
+- Stavy: Dopyt / V realizácii / Dokončené / Údržba / Pozastavené
+- Cena a stav platby (zaplatené / čaká sa / na splátky)
+- Termíny: začiatok, deadline, expirácia domény/hostingu
+- Dashboard s metrikami a "Projektovým pulzom" — prehľad blížiacich sa termínov
+- Filtrovanie podľa stavu a fulltextové vyhľadávanie
+- Checklist úloh per projekt
+- Časovaný log poznámok / dohôd s klientom
+- Ďalšie dôležité linky (zmluvy, Drive priečinky…)
+- Šifrovaný trezor na admin prihlasovacie údaje
+- Export celej databázy do JSON (citlivé polia ostávajú zašifrované)
+- Svetlý / tmavý režim
+
+## Odporúčania do budúcna
+
+- Zapni 2FA na Google konte spojenom s Firebase.
+- Pravidelne sťahuj export ako šifrovanú zálohu.
+- Neukladaj sem bankové údaje ani superadmin prístupy bez ďalšieho zváženia.
+- Pri strate vault passphrase sa šifrované údaje nedajú obnoviť — over si,
+  že ju máš bezpečne zálohovanú (napr. v password manažéri).
